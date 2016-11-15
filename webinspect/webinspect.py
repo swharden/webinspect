@@ -6,7 +6,7 @@ Usage:
     webinspect.launch("any object you want") #launches a web browser
 """
 
-__version__ = '0.1.6'
+__version__ = '0.1.7'
 
 import webbrowser
 import tempfile
@@ -33,7 +33,7 @@ def analyzeThing(thing):
             try:
                 itemEval=str(getattr(thing,name)())
                 if len(itemEval)>1000:
-                    itemEval=itemEval[:1000]+" ..."
+                    itemEval=itemEval[:2000]+" ..."
             except:
                 itemEval="FAILED TO EVALUATE"
         #print("[%s] (%s) %s {%s}"%(name,itemType,itemStr,itemEval))
