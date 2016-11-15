@@ -2,7 +2,7 @@
 
 ## Installation
 * `pip install webinspect`
-* Details are on the (PyPi/webinspect)[https://python.org/pypi/webinspect] page
+* Details are on the [PyPi/webinspect](https://python.org/pypi/webinspect) page
 
 ## Usage
 ```python
