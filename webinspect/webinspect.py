@@ -6,7 +6,7 @@ Usage:
     webinspect.launch("any object you want") #launches a web browser
 """
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 import webbrowser
 import tempfile
@@ -21,19 +21,33 @@ def launch(thing,title=False):
         f.write(html)
     webbrowser.open(fname)
    
+def thingToString(thing,MAXSTRINGLENGTH=10000):
+    if type(thing)==dict:
+        s="DICT:\n\n"
+        for key in sorted(thing.keys()):
+            s+="%s : %s\n"%(key,thing[key])
+    elif type(thing)==list:
+        for i,val in enumerate(thing):
+            thing[i]=str(val)
+        s="LIST:\n\n"+str("\n".join(sorted(thing)))
+    else:
+        s=str(thing)
+    if len(s)>MAXSTRINGLENGTH:
+        s=s[:MAXSTRINGLENGTH]+" ..."
+    return s
+    
 def analyzeThing(thing):
-    """analyze an object and all its attirbutes. Returns a dictionary."""    
+    """analyze an object and all its attirbutes. Returns a dictionary."""   
     things={}
+    
     for name in sorted(dir(thing)):
         item=getattr(thing,name)
         itemType=type(item).__name__
-        itemStr=str(item)
+        itemStr=thingToString(item)
         itemEval=""
         if "method" in itemStr:
             try:
-                itemEval=str(getattr(thing,name)())
-                if len(itemEval)>1000:
-                    itemEval=itemEval[:2000]+" ..."
+                itemEval=thingToString(getattr(thing,name)())
             except:
                 itemEval="FAILED TO EVALUATE"
         #print("[%s] (%s) %s {%s}"%(name,itemType,itemStr,itemEval))
@@ -44,6 +58,7 @@ def websafe(s):
     """return a string with HTML-safe text"""
     s=s.replace("<","&lt;").replace(">","&gt;")
     s=s.replace(r'\x',r' \x')
+    s=s.replace("\n","<br>")
     return s
     
 def htmlFromThing(thing,title):
@@ -64,7 +79,7 @@ def htmlFromThing(thing,title):
     table {font-size: .8em;
            margin-top: 20px;
            border-collapse: collapse;}
-    tr {border: 1px solid #CCC;}
+    tr {border: 1px solid #CCC; vertical-align: text-top;}
     td {padding: 2px 10px 2px 10px;}
     .credits {text-align: center; 
               opacity: 0.5; 
@@ -126,7 +141,8 @@ class TESTCLASS:
     def __init__(self):
         self.x=123
         self.s="scott"
-        self.y=[1,8,3,5,6]
+        self.demoList=[1,8,3,5,6]
+        self.demoDict={"dog":5,"cat":"awful","gecko":False}
 
     def func(self):
         self.f='asdf'
@@ -135,6 +151,4 @@ class TESTCLASS:
         return repr(["array","of","things",1234])
         
 if __name__=="__main__":
-    print("This isn't intended to be run directly, but what the heck...")
-    launch("demo string")
-    launch(TESTCLASS(), "here is a demo title")
+    launch(TESTCLASS(), "here is a demo class")
