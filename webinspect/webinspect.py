@@ -6,7 +6,7 @@ Usage:
     webinspect.launch("any object you want") #launches a web browser
 """
 
-__version__ = '0.2.5'
+__version__ = '0.2.6'
 
 import webbrowser
 import tempfile
