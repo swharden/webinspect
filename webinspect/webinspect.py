@@ -6,7 +6,7 @@ Usage:
     webinspect.launch("any object you want") #launches a web browser
 """
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 import webbrowser
 import tempfile
@@ -23,13 +23,13 @@ def launch(thing,title=False):
    
 def thingToString(thing,MAXSTRINGLENGTH=10000):
     if type(thing)==dict:
-        s="DICT:\n\n"
+        s="DICT (%d):\n\n"%len(thing.keys())
         for key in sorted(thing.keys()):
             s+="%s : %s\n"%(key,thing[key])
     elif type(thing)==list:
         for i,val in enumerate(thing):
             thing[i]=str(val)
-        s="LIST:\n\n"+str("\n".join(sorted(thing)))
+        s="LIST (%d):\n\n"%len(thing)+str(", ".join(sorted(thing)))
     else:
         s=str(thing)
     if len(s)>MAXSTRINGLENGTH:
