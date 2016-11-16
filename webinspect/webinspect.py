@@ -6,12 +6,13 @@ Usage:
     webinspect.launch("any object you want") #launches a web browser
 """
 
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 
 import webbrowser
 import tempfile
 import time
 import datetime
+import copy
 
 def launch(thing,title=False):
     """analyze a thing, create a nice HTML document, and launch it."""
@@ -27,20 +28,27 @@ def thingToString(thing,MAXSTRINGLENGTH=10000):
         for key in sorted(thing.keys()):
             s+="%s : %s\n"%(key,thing[key])
     elif type(thing)==list:
+        s="LIST (%d):\n\n"%len(thing)
         for i,val in enumerate(thing):
             thing[i]=str(val)
-        s="LIST (%d):\n\n"%len(thing)+str(", ".join(sorted(thing)))
+        s=", ".join(thing)
+    elif type(thing)==tuple:
+        thing=list(thing)
+        s="tuple (%d):\n\n"%len(thing)
+        for i,val in enumerate(thing):
+            thing[i]=str(val)
+        s=", ".join(thing)
     else:
         s=str(thing)
     if len(s)>MAXSTRINGLENGTH:
         s=s[:MAXSTRINGLENGTH]+" ..."
     return s
     
-def analyzeThing(thing):
+def analyzeThing(originalThing):
     """analyze an object and all its attirbutes. Returns a dictionary."""   
     things={}
-    
-    for name in sorted(dir(thing)):
+    for name in sorted(dir(originalThing)):
+        thing = copy.copy(originalThing)
         item=getattr(thing,name)
         itemType=type(item).__name__
         itemStr=thingToString(item)
@@ -110,7 +118,7 @@ def htmlFromThing(thing,title):
             color="FFDDDD"
         if itemName.startswith("_"):
             color="EEEEEE"
-        if itemStr.startswith("&lt;"):
+        if itemStr.startswith("&lt;") and not ", " in itemStr:
             itemStr="""<span style="color: #CCC; font-family: serif; 
                 font-style: italic;">%s</span>"""%itemStr
         else:
@@ -142,6 +150,7 @@ class TESTCLASS:
         self.x=123
         self.s="scott"
         self.demoList=[1,8,3,5,6]
+        self.demoTup=(1,8,3,5,6)
         self.demoDict={"dog":5,"cat":"awful","gecko":False}
 
     def func(self):
