@@ -6,7 +6,7 @@ Usage:
     webinspect.launch("any object you want") #launches a web browser
 """
 
-__version__ = '0.2.7'
+__version__ = '0.2.8'
 
 import webbrowser
 import tempfile
@@ -49,7 +49,10 @@ def analyzeThing(originalThing):
     things={}
     for name in sorted(dir(originalThing)):
         thing = copy.copy(originalThing)
-        item=getattr(thing,name)
+        try:
+            item=getattr(thing,name)
+        except:
+            continue
         itemType=type(item).__name__
         itemStr=thingToString(item)
         itemEval=""
