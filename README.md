@@ -18,6 +18,7 @@ webinspect.launch(someObject)
 ![](doc/screenshot.jpg)
 
 ## Complex Usage Example (exploring PyOrigin data module)
+Setting `webinspect.delicate=True` prevents potentially destructive functions from being run.
 ```python
 import imp
 import PyOrigin
