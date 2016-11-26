@@ -16,3 +16,21 @@ webinspect.launch(someObject)
 
 ## Complex Example (neoIO AnalogSignal object)
 ![](doc/screenshot.jpg)
+
+## Complex Usage Example (exploring PyOrigin data module)
+```python
+import imp
+import PyOrigin
+import numpy
+import webinspect
+imp.reload(webinspect)
+
+thing=PyOrigin.ActiveLayer()
+print("analyzing",thing)
+webinspect.delicate=True
+webinspect.launch(thing,"PyOrigin.ActiveLayer()")	
+
+thing2=PyOrigin.WorksheetPages('EventsEpbyE7')
+webinspect.launch(thing2,"WORKBOOK")	
+webinspect.launch(thing2.Layers(0),"SHEET OBJECT (workbook.Layers(0))")	
+```
