@@ -4,6 +4,7 @@ inspect any python object with a slick web interface.
 Usage:
     import webinspect
     webinspect.launch("any object you want") #launches a web browser
+
 """
 
 __version__ = '0.2.8'
@@ -13,6 +14,8 @@ import tempfile
 import time
 import datetime
 import copy
+
+delicate=False
 
 def launch(thing,title=False):
     """analyze a thing, create a nice HTML document, and launch it."""
@@ -44,12 +47,15 @@ def thingToString(thing,MAXSTRINGLENGTH=10000):
         s=s[:MAXSTRINGLENGTH]+" ..."
     return s
     
-def analyzeThing(originalThing):
+def analyzeThing(originalThing2):
     """analyze an object and all its attirbutes. Returns a dictionary."""   
+    originalThing = copy.copy(originalThing2)
     things={}
     for name in sorted(dir(originalThing)):
         thing = copy.copy(originalThing)
         try:
+            if delicate:
+                print(1/0)
             item=getattr(thing,name)
         except:
             continue
@@ -58,9 +64,11 @@ def analyzeThing(originalThing):
         itemEval=""
         if "method" in itemStr:
             try:
+                if not delicate:
+                    print(1/0)
                 itemEval=thingToString(getattr(thing,name)())
             except:
-                itemEval="FAILED TO EVALUATE"
+                itemEval="DID NOT EVALUATE"
         #print("[%s] (%s) %s {%s}"%(name,itemType,itemStr,itemEval))
         things[name]=[itemType,itemStr,itemEval]
     return things
@@ -74,7 +82,8 @@ def websafe(s):
     
 def htmlFromThing(thing,title):
     """create pretty formatted HTML from a things dictionary."""
-    stuff=analyzeThing(thing)
+    thing2 = copy.copy(thing)
+    stuff=analyzeThing(thing2)
     names2=list(stuff.keys())
     for i,name in enumerate(names2):
         if name.startswith("_"):
@@ -100,9 +109,16 @@ def htmlFromThing(thing,title):
     </style></head><body>"""
     
     if title:
-        html+='<span style="color: #CCC;">title: </span>%s<br>'%title    
-    html+='<span style="color: #CCC;">value: </span>%s<br>'%str(thing)
-    html+='<span style="color: #CCC;">&nbsp;type: </span>%s<br>'%type(thing).__name__
+        html+='<span style="color: #CCC;">title: </span>%s<br>'%title  
+    textTitle=""
+    textType=""
+    try:
+        textTitle=str(thing)
+        textType=type(thing).__name__
+    except:
+        pass
+    html+='<span style="color: #CCC;">value: </span>%s<br>'%textTitle
+    html+='<span style="color: #CCC;">&nbsp;type: </span>%s<br>'%textType
     html+='<table cellpadding=3 align="center">'
     html+='<tr style="background-color: #000; color: #FFF; font-weight: bold;">'
     html+='<td>property</td><td>type</td><td>value</td>'
