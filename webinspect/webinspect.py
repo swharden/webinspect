@@ -14,11 +14,12 @@ import tempfile
 import time
 import datetime
 import copy
-
+import os
+import sys
+sys.path.append(os.path.abspath('../'))
+import webinspect
 delicate=False
-
-blacklist=[] # append to this list to prevent execution of some functions
-blacklist.append('destroy')
+blacklist=["destroy"]
 
 def launch(thing,title=False):
     """analyze a thing, create a nice HTML document, and launch it."""
@@ -30,6 +31,15 @@ def launch(thing,title=False):
     with open(fname,'w') as f:
         f.write(html)
     webbrowser.open(fname)
+
+def exceptionToString(e):
+    """when you "except Exception as e", give me the e and I'll give you a string."""
+    exc_type, exc_obj, exc_tb = sys.exc_info()
+    s="EXCEPTION THROWN UNEXPECTEDLY"
+    s+="  FILE: %s\n"%os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    s+="  LINE: %s\n"%exc_tb.tb_lineno
+    s+="  TYPE: %s\n"%exc_type
+    return s
 
 def thingToString(thing,MAXSTRINGLENGTH=10000):
     if type(thing)==dict:
@@ -60,23 +70,24 @@ def analyzeThing(originalThing2):
     for name in sorted(dir(originalThing)):
         print("analyzing",name)
         thing = copy.copy(originalThing)
-        try:
-            if delicate:
-                print(1/0)
+        if name in webinspect.blacklist or name.lower() in webinspect.blacklist:
+            item="DID NOT EVALUATE (this will appear as a string)"
+        else:
             item=getattr(thing,name)
-        except:
-            continue
         itemType=type(item).__name__
         itemStr=thingToString(item)
         itemEval=""
         if "method" in itemStr:
-            try:
-                if delicate or name in blacklist:
-                    print(1/0)
-                itemEval=thingToString(getattr(thing,name)())
-                print("executing %s()"%name)
-            except:
+            if name in webinspect.blacklist or name.lower() in webinspect.blacklist:
                 itemEval="DID NOT EVALUATE"
+            else:
+                print("executing %s()"%name)
+                print("I'm about to try...")
+                try:
+                    itemEval=thingToString(getattr(thing,name)())
+                except Exception as e:
+                    exceptionToString(e)
+
 
         #print("[%s] (%s) %s {%s}"%(name,itemType,itemStr,itemEval))
         things[name]=[itemType,itemStr,itemEval]
@@ -126,8 +137,8 @@ def htmlFromThing(thing,title):
     textTitle=""
     textType=""
     try:
-        textTitle=str(thing)
-        textType=type(thing).__name__
+        textTitle=websafe(str(thing))
+        textType=websafe(type(thing).__name__)
     except:
         pass
     html+='<span style="color: #CCC;">value: </span>%s<br>'%textTitle
