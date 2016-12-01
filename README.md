@@ -17,21 +17,21 @@ webinspect.launch(someObject)
 ## Complex Example (neoIO AnalogSignal object)
 ![](doc/screenshot.jpg)
 
-## Complex Usage Example (exploring PyOrigin data module)
-Setting `webinspect.delicate=True` prevents potentially destructive functions from being run.
+## Preventing methods from being fun
+Webinspect naturally pokes around the methods of objects. If the thing you're inspecting is a string it may have a method "upper()", so naturally webinspect will call `thing.upper()` to see what it returns. Often this is harmless, but what if you want to prevent calling functions such as `thing.destroy()`? To account for this, a _blacklist_ has been added. If the name of any property matches an item in the blacklist, it is skipped-over. This is useful for poking around NeoIO, PyOrigin, and anything with potentially damaging methods.
+
+Here's an example from [SWHLab's core ABF handler](https://github.com/swharden/SWHLab/search?utf8=%E2%9C%93&q=inspect%28self%29&type=Code):
 ```python
-import imp
-import PyOrigin
-import numpy
-import webinspect
-imp.reload(webinspect)
-
-thing=PyOrigin.ActiveLayer()
-print("analyzing",thing)
-webinspect.delicate=True
-webinspect.launch(thing,"PyOrigin.ActiveLayer()")	
-
-thing2=PyOrigin.WorksheetPages('EventsEpbyE7')
-webinspect.launch(thing2,"WORKBOOK")	
-webinspect.launch(thing2.Layers(0),"SHEET OBJECT (workbook.Layers(0))")	
+webinspect.blacklist=[] # clears the blacklist
+webinspect.launch(self.ABFblock.segments[0].eventarrays[0],'self.ABFblock.segments[0].eventarrays[0]')
+webinspect.blacklist=['parents'] # prevents parents() from being executed
+webinspect.launch(self.ABFblock.segments[5].analogsignals[0],'self.ABFblock.segments[5].analogsignals[0]')
+webinspect.blacklist=['t_start','t_stop'] # prevents t_start() and t_stop() from beeing executed
+webinspect.launch(self.ABFblock.segments[5],'self.ABFblock.segments[5]')
+webinspect.blacklist=[] # clears the blacklist
+webinspect.launch(self.ABFblock,'self.ABFblock')
+webinspect.blacklist=[] # clears the blacklist
+webinspect.launch(self.ABFreader,'self.ABFreader')
 ```
+
+You can often tell which methods you need to blacklist, because they're the ones that appear immediately before Python crashes during an inspection.
